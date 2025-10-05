@@ -3,15 +3,17 @@
 This project demonstrates exposure fusion on a Seeed XIAO ESP32-S3 using an OV2640 camera. It fuses three images (different exposures) into one well-exposed image using a per-pixel exposure-weighted algorithm.
 1. SPIFFS-only demo — reads three pre-captured RGB565 images from SPIFFS and fuses them.
 2. Camera Fusion demo — captures three exposures with the OV2640, fuses them, and serves the result over HTTP.
-
----
-
-## Features
-
-- Exposure fusion from three input images
-- SPIFFS-based demo for offline testing
-- Camera capture + fusion + lightweight HTTP server
-- Low-memory row-by-row fusion suitable for XIAO without PSRAM
+3. Matlab exposure-fusion (example)
+- Location: `examples/exposure_algorithm/exposure-fusion-shadow-removal-main/exposure-fusion-master/`
+- Quick run: open `example.m` in Matlab and run it. The `house/` subfolder contains sample images used by the example.
+4. Auto-Exposure Fusion for Shadow Removal 
+- Location: `examples/exposure_algorithm/exposure-fusion-shadow-removal-main/`
+- Quick steps to reproduce basics:
+	- Prepare dataset folders (ISTD/ISTD+/SRD) as described in the original project. For ISTD, place shadow images in `train_A`, masks in `train_B`, and shadow-free images in `train_C_fixed_official`.
+	- Run the exposure parameter generator: `data_processing/compute_params.ipynb` (or the equivalent script) to generate `train_params_fixed`.
+	- Generate test masks with `data_processing/test_mask_generation.py` if needed.
+	- Use `OE_train.sh` to train and `OE_eval.sh` to evaluate (adjust paths and parameters inside the scripts as required).
+	- Pretrained models are linked in the original project; set the `model` parameter in `OE_eval.sh` and the training params (`n`, `ks`, `rks`) to match the model you want to load.
 
 ---
 

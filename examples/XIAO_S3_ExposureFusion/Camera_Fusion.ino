@@ -31,31 +31,23 @@ const char* OUT  = "/fused_cam.rgb565";
 // Pin configuration for OV2640 on XIAO S3 Sense - THIS MUST BE VERIFIED
 // The Seeed XIAO ESP32S3 Sense pin mapping differs across revisions; set these to the correct IO number
 // The mapping below is a placeholder. Replace with correct values if needed.
-static camera_config_t camera_config = {
-  //.pin_pwdn       = X, // power down pin
-  //.pin_reset      = -1,
-  //.pin_xclk       = 0,
-  //.pin_sccb_sda   = 21,
-  //.pin_sccb_scl   = 22,
-  //.pin_d7         = 35,
-  //.pin_d6         = 34,
-  //.pin_d5         = 39,
-  //.pin_d4         = 36,
-  //.pin_d3         = 19,
-  //.pin_d2         = 18,
-  //.pin_d1         = 5,
-  //.pin_d0         = 4,
-  //.pin_vsync      = 25,
-  //.pin_href       = 23,
-  //.pin_pclk       = 26,
-  .xclk_freq_hz = 20000000,
-  .ledc_timer = LEDC_TIMER_0,
-  .ledc_channel = LEDC_CHANNEL_0,
-  .pixel_format = PIXFORMAT_RGB565,
-  .frame_size = FRAMESIZE_QQVGA, // 160x120
-  .jpeg_quality = 12,
-  .fb_count = 1
+// We'll try multiple candidate configs for different XIAO/OV2640 board revisions.
+// If one succeeds, we'll use it. Each candidate maps typical OV2640 signals to GPIO numbers.
+struct CamCandidate { camera_config_t cfg; const char* name; };
+
+// Helper macro to create camera_config_t with required fields only
+#define BASE_CFG {.xclk_freq_hz = 20000000, .ledc_timer = LEDC_TIMER_0, .ledc_channel = LEDC_CHANNEL_0, .pixel_format = PIXFORMAT_RGB565, .frame_size = FRAMESIZE_QQVGA, .jpeg_quality = 12, .fb_count = 1 }
+
+// Candidate configurations (common mappings). These may need tweaking per board revision.
+static CamCandidate candidates[] = {
+  // Candidate 0: common OV2640 on many ESP32-S3 modules (example mapping)
+  { { .pin_pwdn = -1, .pin_reset = -1, .pin_xclk = 21, .pin_sccb_sda = 26, .pin_sccb_scl = 27, .pin_d7 = 35, .pin_d6 = 34, .pin_d5 = 39, .pin_d4 = 36, .pin_d3 = 19, .pin_d2 = 18, .pin_d1 = 5, .pin_d0 = 4, .pin_vsync = 25, .pin_href = 23, .pin_pclk = 22, BASE_CFG }, "candidate-0" },
+  // Candidate 1: alternate mapping used by some Seeed boards
+  { { .pin_pwdn = -1, .pin_reset = -1, .pin_xclk = 4, .pin_sccb_sda = 15, .pin_sccb_scl = 14, .pin_d7 = 47, .pin_d6 = 46, .pin_d5 = 45, .pin_d4 = 44, .pin_d3 = 43, .pin_d2 = 42, .pin_d1 = 41, .pin_d0 = 40, .pin_vsync = 39, .pin_href = 38, .pin_pclk = 37, BASE_CFG }, "candidate-1" },
+  // Candidate 2: mapping similar to ESP32-CAM modules (for testing)
+  { { .pin_pwdn = 32, .pin_reset = -1, .pin_xclk = 0, .pin_sccb_sda = 26, .pin_sccb_scl = 27, .pin_d7 = 35, .pin_d6 = 34, .pin_d5 = 39, .pin_d4 = 36, .pin_d3 = 21, .pin_d2 = 19, .pin_d1 = 18, .pin_d0 = 5, .pin_vsync = 25, .pin_href = 23, .pin_pclk = 22, BASE_CFG }, "candidate-2" }
 };
+static const int CAND_COUNT = sizeof(candidates)/sizeof(candidates[0]);
 
 float well_exposedness(uint8_t r, uint8_t g, uint8_t b){
   float rf = r / 255.0f;
@@ -77,9 +69,22 @@ void setup(){
     return;
   }
 
-  // Initialize camera
-  if(esp_camera_init(&camera_config) != ESP_OK){
-    Serial.println("Camera init failed - verify pin mapping and board support for camera on S3");
+  // Try autodetecting the right camera pin mapping from candidate list
+  int found = -1;
+  for(int i=0;i<CAND_COUNT;i++){
+    Serial.printf("Trying camera mapping %s (%d/%d)...\n", candidates[i].name, i+1, CAND_COUNT);
+    esp_err_t res = esp_camera_init(&candidates[i].cfg);
+    if(res == ESP_OK){
+      Serial.printf("Camera init succeeded with %s\n", candidates[i].name);
+      found = i;
+      break;
+    } else {
+      Serial.printf("Camera init failed (0x%X) for %s\n", res, candidates[i].name);
+      esp_camera_deinit();
+    }
+  }
+  if(found < 0){
+    Serial.println("Camera autodetect failed - try supplying pin mapping or add more candidates");
     return;
   }
 

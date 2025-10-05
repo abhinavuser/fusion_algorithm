@@ -2,7 +2,19 @@
 
 This project demonstrates exposure fusion on a Seeed XIAO ESP32-S3 using an OV2640 camera. It fuses three images (different exposures) into one well-exposed image using a per-pixel exposure-weighted algorithm.
 1. SPIFFS-only demo — reads three pre-captured RGB565 images from SPIFFS and fuses them.
+- Location: `examples/XIAO_S3_ExposureFusion/XIAO_S3_ExposureFusion.ino`
+- Quick run:
+	- Convert images:
+		`python tools/to_rgb565.py under.jpg examples\XIAO_S3_ExposureFusion\data\img1.rgb565 --width 160 --height 120`
+	- Upload SPIFFS (from the example folder):
+		`cd examples\XIAO_S3_ExposureFusion` then `platformio run -e esp32s3 --target uploadfs`
+	- Upload sketch: `platformio run -e esp32s3 --target upload`
 2. Camera Fusion demo — captures three exposures with the OV2640, fuses them, and serves the result over HTTP.
+- Location: `examples/XIAO_S3_ExposureFusion/Camera_Fusion.ino`
+- Quick run:
+	- Upload sketch: `platformio run -e esp32s3 --target upload`
+	- Monitor serial: `platformio device monitor -e esp32s3 -b 115200`
+	- After AP starts, download fused image from `http://192.168.4.1/` or run `.\tools\download_fused.ps1 -Out fused_download.rgb565`
 3. Matlab exposure-fusion (example)
 - Location: `examples/exposure_algorithm/exposure-fusion-shadow-removal-main/exposure-fusion-master/`
 - Quick run: open `example.m` in Matlab and run it. The `house/` subfolder contains sample images used by the example.

@@ -61,6 +61,28 @@ How to run the example on XIAO S3
 4. Upload the sketch.
 5. Open Serial Monitor at 115200. The sketch prints progress and final fused filename `/fused.rgb565`.
 
+PlatformIO quick commands
+If you use PlatformIO the included `platformio.ini` has a minimal `esp32s3` environment.
+
+Build and upload the sketch:
+```powershell
+platformio run -e esp32s3 --target upload
+```
+
+Upload SPIFFS data (from inside the example folder containing the `data/` directory):
+```powershell
+platformio run -e esp32s3 --target uploadfs
+```
+
+Download fused result over Wi‑Fi (if using `Camera_Fusion.ino`)
+1. After the camera sketch finishes it starts an AP `XIAO_Fusion` (password `12345678`) and a small HTTP server on `192.168.4.1`.
+2. Connect your PC/phone to that Wi‑Fi network and open http://192.168.4.1/ to download the fused image.
+3. Optionally use the included PowerShell helper to download it automatically:
+```powershell
+.
+	ools\download_fused.ps1 -Out fused_download.rgb565
+```
+
 Viewing the fused image
 - After the sketch finishes, download `/fused.rgb565` from SPIFFS (PlatformIO `download`) and convert back to PNG with a small Python helper (inverse of above) or open in an image tool that supports raw RGB565.
 

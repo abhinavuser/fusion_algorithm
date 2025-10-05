@@ -1,3 +1,24 @@
+# XIAO_S3_ExposureFusion example
+
+This folder contains two sketches demonstrating a minimal exposure-fusion flow for the Seeed XIAO ESP32-S3 Sense.
+
+Files
+- `XIAO_S3_ExposureFusion.ino` — SPIFFS-based demo: reads `/img1.rgb565`, `/img2.rgb565`, `/img3.rgb565` from SPIFFS (in `data/`), performs a per-pixel weighted fusion row-by-row, and writes `/fused.rgb565` back to SPIFFS.
+- `Camera_Fusion.ino` — attempts to autodetect OV2640 camera pin mappings, capture three exposures (via sensor gain/exposure changes), run the same fusion, save `/fused_cam.rgb565`, and start a small Wi‑Fi AP + HTTP server so you can download the result.
+
+Quick steps (SPIFFS demo)
+1. Convert three images to RGB565 using `tools/to_rgb565.py` (defaults to 160x120). Put them into `examples/XIAO_S3_ExposureFusion/data/` as `img1.rgb565`, `img2.rgb565`, `img3.rgb565`.
+2. In PlatformIO: open the example folder, then run `platformio run -e esp32s3 --target uploadfs` to upload SPIFFS.
+3. Upload `XIAO_S3_ExposureFusion.ino` to your XIAO and open the serial monitor at 115200. The sketch will report progress and write `/fused.rgb565`.
+
+Quick steps (camera capture + download)
+1. Upload `Camera_Fusion.ino` to the board.
+2. Open serial monitor to watch autodetect progress. If autodetect finds a working pin mapping, it will save `/camera_map.txt` and start AP `XIAO_Fusion` (password `12345678`).
+3. Connect to the AP and go to `http://192.168.4.1/` to download the fused image, or use `tools/download_fused.ps1` after connecting to the AP.
+
+Notes
+- Both examples are intentionally small-resolution to reduce RAM usage. If your board has PSRAM, uncomment the `-DBOARD_HAS_PSRAM` build flag in `platformio.ini` and consider increasing resolution.
+- Camera autodetect is a pragmatic approach for boards with uncertain pinouts — it's not exhaustive. If autodetect fails, provide the exact pin numbers or serial output and the `camera_map.txt` file will be created on success which we can use for future automated detection.
 XIAO S3 Exposure Fusion example
 
 This folder contains a small demo that performs a memory-friendly, on-device exposure fusion on a Seeed XIAO ESP32-S3.

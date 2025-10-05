@@ -99,3 +99,22 @@ If you prefer I will now:
 - (2) implement a camera-capture variant if you provide the camera model and whether you have PSRAM.
 
 Choose which action you want me to do next. If you want me to continue, I'll add the example now and commit the changes.
+
+If PlatformIO is not installed on your machine
+---------------------------------------------
+If running `platformio` failed ("command not found"), you have two easy options:
+
+- Use the PlatformIO extension for Visual Studio Code (recommended): open VS Code, install the "PlatformIO IDE" extension, then open this folder and the PlatformIO toolbar will provide build/upload/uploadfs actions.
+- Or install PlatformIO CLI directly (Windows PowerShell):
+
+```powershell
+python -m pip install --user platformio
+# then add %USERPROFILE%\AppData\Roaming\Python\Python3X\Scripts to your PATH or run platformio from that folder
+```
+
+If you don't want to install PlatformIO, you can still test the SPIFFS fusion workflow by:
+
+1. Using the `tools/to_rgb565.py` script to convert images on your PC to raw `.rgb565` files.
+2. Place the three files (`img1.rgb565`, `img2.rgb565`, `img3.rgb565`) inside the `examples/XIAO_S3_ExposureFusion/data/` folder and upload via the Arduino ESP32 Filesystem Uploader plugin in Arduino IDE (or use PlatformIO `uploadfs` later).
+
+Both the SPIFFS-only demo (`XIAO_S3_ExposureFusion.ino`) and the camera capture variant (`Camera_Fusion.ino`) are present in `examples/XIAO_S3_ExposureFusion/`. The example-level README there has quick per-example notes.

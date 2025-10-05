@@ -1,28 +1,6 @@
 # Exposure Fusion for XIAO ESP32-S3 (OV2640)
 
 This project demonstrates exposure fusion on a Seeed XIAO ESP32-S3 using an OV2640 camera. It fuses three images (different exposures) into one well-exposed image using a per-pixel exposure-weighted algorithm.
-
-Table of Contents
-- [Introduction](#introduction)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-	- [PlatformIO Setup](#platformio-setup)
-	- [Arduino IDE Setup](#arduino-ide-setup)
-- [Usage](#usage)
-	- [Convert Images to RGB565](#convert-images-to-rgb565)
-	- [Upload SPIFFS Data](#upload-spiffs-data)
-	- [Upload and Monitor](#upload-and-monitor)
-- [Notes](#notes)
-- [FAQ](#faq)
-- [Contributing](#contributing)
-
----
-
-## Introduction
-
-Two main examples are included:
-
 1. SPIFFS-only demo — reads three pre-captured RGB565 images from SPIFFS and fuses them.
 2. Camera Fusion demo — captures three exposures with the OV2640, fuses them, and serves the result over HTTP.
 
@@ -39,9 +17,9 @@ Two main examples are included:
 
 ## Project layout
 
-- `examples/` — Arduino/ESP examples (including `XIAO_S3_ExposureFusion` with both SPIFFS and camera variants).
+- `examples/` — STM32/ESP examples (including `XIAO_S3_ExposureFusion` with both SPIFFS and camera variants).
 - `src/` — SensorFusion library (Madgwick / Mahony IMU fusion implementations) used for inertial sensor fusion.
-- Root `.pde` files and `extras/` — Processing sketches (snake / neural-net genetic algorithm visualization) and related assets; these are a separate desktop project but included in this repo.
+- Root `.pde` files and `extras/` — Processing sketches (snake / neural-net genetic algorithm visualization) and related assets; a separate desktop project to implemet the fusion algorithm.
 - `tools/` — helper scripts (image converters, downloader).
 - `platformio.ini`, `library.properties`, `README.md` — project metadata and build config.
 
@@ -49,7 +27,7 @@ Two main examples are included:
 
 ## Requirements
 
-- Hardware: XIAO ESP32-S3, OV2640 camera module (or compatible)
+- Hardware: XIAO ESP32-S3, OV2640 camera module, STM32F303K8 MCU
 - Software: PlatformIO or Arduino IDE, Python 3.x
 - Python libs: Pillow (pip install Pillow)
 
@@ -128,14 +106,12 @@ If using `Camera_Fusion.ino`, after a successful run the board starts an AP name
 
 ---
 
-## FAQ
+## How to Contribute
 
-Q: Where do I get the raw files?
-A: Use `tools/to_rgb565.py` to convert PNG/JPG to raw RGB565 and put them in `examples/XIAO_S3_ExposureFusion/data/`.
-
-Q: How do I view the fused RGB565 file?
-A: Use `tools/rgb565_to_png.py` to convert the raw file back to PNG.
+1. Fork the repo and create your branch.
+2. Write clear, well-documented code.
+3. Add/modify tests as needed.
+4. Open a Pull Request with a detailed description.
 
 ---
-
 

@@ -22,6 +22,8 @@ This project demonstrates exposure fusion on a Seeed XIAO ESP32-S3 using an OV26
 - Root `.pde` files and `extras/` — Processing sketches (snake / neural-net genetic algorithm visualization) and related assets; a separate desktop project to implemet the fusion algorithm.
 - `tools/` — helper scripts (image converters, downloader).
 - `platformio.ini`, `library.properties`, `README.md` — project metadata and build config.
+- A Matlab implementation of Tom Mertens' classic "Exposure Fusion" (Mertens et al., 2007/2009). See `examples/exposure_algorithm/exposure-fusion-shadow-removal-main/exposure-fusion-master/` for the original Matlab code and example images.
+- A shadow removal of an exposure-fusion problem (paper: "Auto-Exposure Fusion for Single-Image Shadow Removal"). The project, datasets, and training/evaluation scripts are under `examples/exposure_algorithm/exposure-fusion-shadow-removal-main/`.
 
 ---
 

@@ -17,6 +17,8 @@
 
 #include "SPIFFS.h"
 #include "esp_camera.h"
+#include <WiFi.h>
+#include <WebServer.h>
 
 // Default image size used for capture & fusion (keep small)
 #define WIDTH 160
@@ -45,9 +47,34 @@ static CamCandidate candidates[] = {
   // Candidate 1: alternate mapping used by some Seeed boards
   { { .pin_pwdn = -1, .pin_reset = -1, .pin_xclk = 4, .pin_sccb_sda = 15, .pin_sccb_scl = 14, .pin_d7 = 47, .pin_d6 = 46, .pin_d5 = 45, .pin_d4 = 44, .pin_d3 = 43, .pin_d2 = 42, .pin_d1 = 41, .pin_d0 = 40, .pin_vsync = 39, .pin_href = 38, .pin_pclk = 37, BASE_CFG }, "candidate-1" },
   // Candidate 2: mapping similar to ESP32-CAM modules (for testing)
-  { { .pin_pwdn = 32, .pin_reset = -1, .pin_xclk = 0, .pin_sccb_sda = 26, .pin_sccb_scl = 27, .pin_d7 = 35, .pin_d6 = 34, .pin_d5 = 39, .pin_d4 = 36, .pin_d3 = 21, .pin_d2 = 19, .pin_d1 = 18, .pin_d0 = 5, .pin_vsync = 25, .pin_href = 23, .pin_pclk = 22, BASE_CFG }, "candidate-2" }
+  { { .pin_pwdn = 32, .pin_reset = -1, .pin_xclk = 0, .pin_sccb_sda = 26, .pin_sccb_scl = 27, .pin_d7 = 35, .pin_d6 = 34, .pin_d5 = 39, .pin_d4 = 36, .pin_d3 = 21, .pin_d2 = 19, .pin_d1 = 18, .pin_d0 = 5, .pin_vsync = 25, .pin_href = 23, .pin_pclk = 22, BASE_CFG }, "candidate-2" },
+  // Candidate 3: another common layout tried on S3 dev boards
+  { { .pin_pwdn = -1, .pin_reset = -1, .pin_xclk = 13, .pin_sccb_sda = 12, .pin_sccb_scl = 11, .pin_d7 = 47, .pin_d6 = 46, .pin_d5 = 45, .pin_d4 = 44, .pin_d3 = 43, .pin_d2 = 42, .pin_d1 = 41, .pin_d0 = 40, .pin_vsync = 39, .pin_href = 38, .pin_pclk = 37, BASE_CFG }, "candidate-3" },
+  // Candidate 4: Seeed-like hypothetical mapping
+  { { .pin_pwdn = -1, .pin_reset = -1, .pin_xclk = 20, .pin_sccb_sda = 18, .pin_sccb_scl = 19, .pin_d7 = 47, .pin_d6 = 46, .pin_d5 = 45, .pin_d4 = 44, .pin_d3 = 21, .pin_d2 = 22, .pin_d1 = 23, .pin_d0 = 25, .pin_vsync = 26, .pin_href = 27, .pin_pclk = 14, BASE_CFG }, "candidate-4" }
 };
 static const int CAND_COUNT = sizeof(candidates)/sizeof(candidates[0]);
+
+// Wi-Fi / Web server to serve fused image
+WebServer server(80);
+
+void handleRoot(){
+  if(SPIFFS.exists(OUT)){
+    File f = SPIFFS.open(OUT, "r");
+    server.streamFile(f, "image/raw");
+    f.close();
+  } else {
+    server.send(200, "text/plain", "No fused image yet");
+  }
+}
+
+void startWeb(){
+  WiFi.softAP("XIAO_Fusion", "12345678");
+  IPAddress ip = WiFi.softAPIP();
+  Serial.printf("AP started. Connect to http://%d.%d.%d.%d/ to download fused image\n", ip[0], ip[1], ip[2], ip[3]);
+  server.on('/', handleRoot);
+  server.begin();
+}
 
 float well_exposedness(uint8_t r, uint8_t g, uint8_t b){
   float rf = r / 255.0f;
@@ -87,6 +114,12 @@ void setup(){
     Serial.println("Camera autodetect failed - try supplying pin mapping or add more candidates");
     return;
   }
+  // Save the working mapping index to SPIFFS for reference
+  File mapf = SPIFFS.open("/camera_map.txt","w");
+  if(mapf){ mapf.printf("%s\n", candidates[found].name); mapf.close(); }
+
+  // start lightweight AP + server so you can download fused result without serial
+  startWeb();
 
   // Capture three exposures by adjusting sensor settings
   // NOTE: exact sensor register controls depend on the driver. We attempt to use sensor API.

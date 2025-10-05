@@ -37,6 +37,16 @@ Two main examples are included:
 
 ---
 
+## Project layout
+
+- `examples/` — Arduino/ESP examples (including `XIAO_S3_ExposureFusion` with both SPIFFS and camera variants).
+- `src/` — SensorFusion library (Madgwick / Mahony IMU fusion implementations) used for inertial sensor fusion.
+- Root `.pde` files and `extras/` — Processing sketches (snake / neural-net genetic algorithm visualization) and related assets; these are a separate desktop project but included in this repo.
+- `tools/` — helper scripts (image converters, downloader).
+- `platformio.ini`, `library.properties`, `README.md` — project metadata and build config.
+
+---
+
 ## Requirements
 
 - Hardware: XIAO ESP32-S3, OV2640 camera module (or compatible)
@@ -128,10 +138,4 @@ A: Use `tools/rgb565_to_png.py` to convert the raw file back to PNG.
 
 ---
 
-## Contributing
 
-Contributions are welcome. If you provide a confirmed camera pin mapping for a specific XIAO S3 Sense board revision I will add it to `Camera_Fusion.ino` and document it here.
-
----
-
-If you want further trimming or a one-line quickstart, tell me exactly which lines to remove and I'll produce the final tiny README.
